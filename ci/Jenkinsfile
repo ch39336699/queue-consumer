@@ -10,6 +10,7 @@ standardPipeline {
     node_label = 'java11'
     java_tool = 'JAVA_11'
     CF_APP_NAME = "queue-consumer"
+    parameters: [[$class: 'StringParameterValue', name: 'CF_APP_NAME', value: queue-consumer]]
    // parameters [string(name: 'CF_APP_NAME', value: 'queue-consumer')]
     //build_properties = [opts: '-DSPRING_PROFILES_ACTIVE=ci', tool: 'gradle', patterns: new Patterns().gradleJava, scmTagging: true, nexusTagging: false]
 }
