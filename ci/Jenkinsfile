@@ -1,0 +1,14 @@
+#!groovy
+@Library('master-pipeline')
+def APP_NAME = 'queue-consumer'
+
+if (!env.BRANCH_NAME) {
+    env.BRANCH_NAME = 'master'
+}
+
+standardPipeline {
+    node_label = 'java11'
+    java_tool = 'JAVA_11'
+    //build_properties = [opts: '-DSPRING_PROFILES_ACTIVE=ci', tool: 'gradle', patterns: new Patterns().gradleJava, scmTagging: true, nexusTagging: false]
+}
+

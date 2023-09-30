@@ -1,0 +1,50 @@
+@Library('FXF_CD_Libraries') _
+
+StandardDeployPipeline {
+
+  final String STAGE_PROD_URL = ''
+  final String PREPROD_URL = ''
+
+  pcf = [
+    pamId               : '18848',
+    url                 : '',
+    configServerUrl     : '',
+    groupId             : '',
+    artifactId          : 'config-server',
+    instances           : 1,
+    artifactFilePattern : '*.jar',
+    smoke               : {echo 'This is our smoke test.'},
+    nexusCredentialsId  : 'NexusCredentials',
+    nexusRepos          : ['release', 'staging', 'snapshot'],
+    versionsRef         : 'nexus',
+    relyDynamic         : [
+                    enabled : true,
+                    envUrlCredentialId: 'directActuator'
+                ],
+    parameters    : [
+        choice(name: 'ENVIRONMENT', choices: ['development', 'release', 'staging', 'preprod', 'production'], description: 'Select space to deploy to')
+    ],
+    var             : ''
+  ]
+
+  if(params.ENVIRONMENT == 'staging') {
+    pcf.url = STAGE_PROD_URL
+  } else if(params.ENVIRONMENT == 'preprod') {
+    pcf.url = PREPROD_URL
+  } else if(params.ENVIRONMENT == 'production') {
+    pcf.url = STAGE_PROD_URL
+  }
+    if(params.ENVIRONMENT != 'production') {
+    pcf.var='-'+params.ENVIRONMENT
+    }
+
+  pcf.javaOpts = "-Duser.timezone=GMT -Dspring.profiles.active=${params.ENVIRONMENT},cloud"
+   pcf.script = """
+          set -x
+             cf set-env "${pcf.artifactId}" APPDYNAMICS_AGENT_APPLICATION_NAME: FXFDirect-3531550-"${params.ENVIRONMENT}"
+             cf set-env "${pcf.artifactId}" APPDYNAMICS_AGENT_TIER_NAME: config-server-3531550
+             cf set-env "${pcf.artifactId}" SPRING_PROFILES_ACTIVE ${params.ENVIRONMENT},cloud,edc${params.ENVIRONMENT},wtc${params.ENVIRONMENT}
+             cf set-env "${pcf.artifactId}" JBP_CONFIG_OPEN_JDK_JRE '{ jre: { version: 11.+}}'
+             cf push -t 150  "${pcf.artifactId}" -p *.jar -f manifest_temp.yml --var env="${params.ENVIRONMENT}" --var foundation="\${PCF_FOUNDATION}"
+       """
+}

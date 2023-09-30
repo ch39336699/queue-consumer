@@ -1,0 +1,57 @@
+library 'reference-pipeline'
+library 'AppServiceAccount'
+
+pipeline {
+    agent any
+    
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '4', daysToKeepStr: '4'))
+    }
+    
+    environment {
+        APP_NAME = "config-server"
+    }
+
+    parameters {
+        choice(name: 'SPACE', choices: ['production'])
+        choice(name: 'NEXUS_REPO', choices: ['3531550-H3D-snapshot', '3531550-H3D'])
+        string(name: 'VERSION', defaultValue: '')
+    }
+
+    stages {
+        stage('Deploy to Production') {
+            steps {
+		   		downloadNexusArtifact repo: '3531550-H3D',
+	            	groupId: '',
+	                artifactId: "${APP_NAME}",
+	                extension: 'jar',
+	                release: true,
+	                version: "2.0.0.a",
+	                downloadFileName: "${APP_NAME}.jar"
+
+                script {
+		            try {
+				        pcfDeploy pamId: '18848',
+				            url: "",
+				            space: "production",
+				            cfcmd: "apps",
+				            extCfCmd: [
+                                          "push -p ${APP_NAME}.jar -i 2 --var foundation=wtccf2 --var env=${SPACE}",
+                                          "set-env ${APP_NAME}-new JBP_CONFIG_OPEN_JDK_JRE '{ jre: { version: 11.+}}'",
+                                        ]
+				    } catch (ex) {
+				        echo "Push failed"
+				        currentBuild.result = 'UNSTABLE'
+				    }
+			    }
+            }
+        }
+    }
+}
+
+def loadValuesYaml(x) {
+
+  def valuesYaml = readYaml (file: 'release.yml')
+  return valuesYaml[x];
+}

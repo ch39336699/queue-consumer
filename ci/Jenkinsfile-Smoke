@@ -1,0 +1,28 @@
+library 'reference-pipeline'
+library 'AppServiceAccount'
+
+pipeline {
+    agent any
+    
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '10'))
+    }
+    
+    environment {
+        APP_NAME = "config-server"
+		JAVA_HOME = tool 'JAVA_11'
+    }
+    
+    parameters {
+        choice(name: 'ENVIRONMENT', choices: ['release', 'staging', 'preprod', 'production'], description: 'Select space to deploy to')
+    }
+
+    stages {
+        stage('Smoke Test') {
+            steps {
+				sh "./gradlew clean smokeTest -Pargs=--test.environment=${params.ENVIRONMENT} --no-daemon"
+            }
+        }
+    }
+}
