@@ -26,7 +26,8 @@ plugins {
 
 group = 'com.example'
 //version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '12'
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
 apply plugin: 'maven-publish'
 configurations {
     compileOnly {
