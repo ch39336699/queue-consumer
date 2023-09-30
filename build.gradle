@@ -1,0 +1,62 @@
+buildscript {
+    ext {
+        springBootVersion = '2.6.6'
+        springCloudVersion = '2021.0.1'
+
+        //nexusUrl = ""
+
+        // nexusUsername and nexusPassword will be set by the shared pipeline when running from Jenkins.
+        // Set the environment variables at the end of the next two lines if you want to upload to Nexus from a local build.
+        // nexusUsername = project.hasProperty('nexusUsername') ? nexusUsername : "$System.env.nexusUsername"
+        //nexusPassword = project.hasProperty('nexusPassword') ? nexusPassword : "$System.env.nexusPassword"
+
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.6.6'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'java'
+    id 'maven-publish'
+}
+
+group = 'com.example'
+//version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '12'
+apply plugin: 'maven-publish'
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-artemis'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    //implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.cloud:spring-cloud-starter'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

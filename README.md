@@ -1,2 +1,1 @@
-# queue-consumer
-queue-consumer
+# springboot-artemis
