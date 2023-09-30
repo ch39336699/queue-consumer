@@ -21,16 +21,14 @@ import javax.jms.ConnectionFactory;
 @Service("bean1")
 @Slf4j
 public class Listeners {
-   // @JmsListener(destination = "myqueue2")
-   // public void receiveMessage(String message) {
-    //    log.info("Received text message: {}", message);
-   // }
+    @JmsListener(destination = "myqueue2")
+    public void receiveMessage(String message) {
+        log.info("Received text message: {}", message);
+    }
 
     @JmsListener(destination = "spaceships", containerFactory = "shipFactory")
     public void receiveShip(SpaceShip ship) {
         log.info("Received: {}", ship);
     }
-
-
 
 }
